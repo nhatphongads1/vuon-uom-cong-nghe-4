@@ -69,7 +69,7 @@ let renderer;try{renderer=new THREE.WebGLRenderer({antialias:true})}catch(e){fai
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;$('stage').appendChild(renderer.domElement);
 const scene=new THREE.Scene();scene.background=new THREE.Color('#bfe0f4').convertSRGBToLinear();scene.fog=new THREE.Fog(new THREE.Color('#bfe0f4').convertSRGBToLinear(),30,90);
 const camera=new THREE.PerspectiveCamera(46,1,.1,200);
-renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.0;
+renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.85;
 const lin=c=>new THREE.Color(c).convertSRGBToLinear();
 const mat=(c,o)=>new THREE.MeshStandardMaterial(Object.assign({color:lin(c),roughness:.85},o||{}));
 const rr=(a,b)=>a+Math.random()*(b-a);
@@ -197,7 +197,7 @@ function mkPotGlass(){const g=new THREE.Group();const m=new THREE.MeshPhysicalMa
  const inner=cyl(.5,.42,.4,M.soil,0,.28,0,28);g.add(inner);return g}
 function mkNursery(kind){const g=new THREE.Group();const pm=mat('#26292b',{roughness:.6});g.add(lathe([[0,0],[.16,0],[.2,.04],[.27,.3],[.29,.32],[.29,.34],[.26,.34],[.25,.31],[.19,.06],[0,.05]],pm,24));
  const sl=new THREE.Mesh(new THREE.CircleGeometry(.25,20),M.soil);sl.rotation.x=-Math.PI/2;sl.position.y=.3;g.add(sl);
- const pl=kind==='cuc'?mkCuc(.55):kind==='songdoi'?mkSongDoi(.55):kind==='muoi'?mkMuoi(.55,true):kind==='sick'?mkSick():kind==='peri'?mkPeri(.8,{n:2}):mkSnake(.55);pl.position.y=.3;g.add(pl);return g}
+ const pl=kind==='hong'?mkHong(.8):kind==='xuongrong'?mkXuongRong(.8):kind==='senda'?mkSenDa(.85):kind==='trauba'?mkTrauBa(.8):kind==='phuquy'?mkPhuQuy(.8):kind==='cuc'?mkCuc(.55):kind==='songdoi'?mkSongDoi(.55):kind==='muoi'?mkMuoi(.55,true):kind==='sick'?mkSick():kind==='peri'?mkPeri(.8,{n:2}):mkSnake(.55);pl.position.y=.3;g.add(pl);return g}
 function leafGeo(L,W,bend,seg){const g=new THREE.PlaneGeometry(W,L,2,seg||8);const p=g.attributes.position;for(let i=0;i<p.count;i++){const y=Math.max(0,Math.min(1,(p.getY(i)+L/2)/L)),x=p.getX(i);const taper=1-Math.pow(y,2.2)*.92;p.setXYZ(i,x*taper,y*L,bend*y*y*L+Math.abs(x)*.4*(1-y))}g.computeVertexNormals();return g}
 function mkMuoi(sc,fl){const g=new THREE.Group();const stm=mat('#b45b6a',{roughness:.5}),lm=mat('#7fbf4f',{roughness:.35}),lm2=mat('#6aa83f',{roughness:.35});
  for(let s=0;s<5;s++){const a=s/5*6.283,tl=.32+Math.random()*.15;const pts=[[0,0,0],[Math.cos(a)*.06,tl*.5,Math.sin(a)*.06],[Math.cos(a)*.13,tl,Math.sin(a)*.13]];g.add(tube(pts,.012,stm,8));
@@ -267,7 +267,7 @@ function heldChip(){const h=$('held');if(!held){h.classList.remove('on');return}
 function setHeld(h){held=held===h?null:h;heldChip();Object.keys(ITEMS).forEach(id=>{ITEMS[id].g.userData.sel=false});renderCursor()}
 function renderCursor(){renderer.domElement.style.cursor=held?'crosshair':'pointer'}
 /* ======== Menu bài ======== */
-const TABS=[['b2','Bài 2 · Vật liệu, dụng cụ'],['sun','Bài 3 · Gieo hạt hướng dương'],['muoi','Bài 3 · Trồng hoa mười giờ'],['luoiho','Bài 4 · Trồng cây lưỡi hổ'],['c1','Bài 5 · Chăm sóc dừa cạn'],['c2','Bài 5 · Chăm sóc lưỡi hổ'],['c3','Bài 5 · Luyện tập'],['proj','Dự án 1 · Trang trí lớp học']];
+const TABS=[['b1','Bài 1 · Hoa, cây cảnh quanh em'],['b2','Bài 2 · Vật liệu, dụng cụ'],['sun','Bài 3 · Gieo hạt hướng dương'],['muoi','Bài 3 · Trồng hoa mười giờ'],['luoiho','Bài 4 · Trồng cây lưỡi hổ'],['c1','Bài 5 · Chăm sóc dừa cạn'],['c2','Bài 5 · Chăm sóc lưỡi hổ'],['c3','Bài 5 · Luyện tập'],['proj','Dự án 1 · Trang trí lớp học']];
 TABS.forEach(t=>{const b=el('button','btn',t[1]);b.dataset.k=t[0];b.onclick=()=>start(t[0]);$('tabs').appendChild(b)});
 function markTab(k){[...$('tabs').children].forEach(b=>b.classList.toggle('on',b.dataset.k===k))}
 /* ======== Khởi tạo hoạt động trồng ======== */
@@ -275,13 +275,15 @@ function resetScene(){
  Object.keys(ITEMS).forEach(id=>{const it=ITEMS[id];it.tray=false;it.g.visible=false;it.g.position.copy(HOME[id]||new THREE.Vector3(0,-5,0));it.g.rotation.set(0,0,0);it.g.scale.setScalar(1)});
  while(dotsG.children.length)dotsG.remove(dotsG.children[0]);while(moundG.children.length)moundG.remove(moundG.children[0]);
  while(work.children.length>WORK_BASE)work.remove(work.children[work.children.length-1]);drops.length=0;growT=-1;
- if(typeof restorePot==='function')restorePot();if(typeof classCorner!=='undefined'){classCorner.visible=false}
+ if(typeof libG!=='undefined'){libG.visible=false}
+if(typeof restorePot==='function')restorePot();if(typeof classCorner!=='undefined'){classCorner.visible=false}
 if(typeof careG!=='undefined'){careG.visible=false;prG.visible=false;sunSet.visible=false;care=null}
  work.visible=false;work.position.set(0,1.09,.15);work.scale.setScalar(1);band.visible=false;soilM.visible=false;held=null;heldChip();watering=false;b2g.visible=false;SHADE.mark.material.opacity=0;
  clearLbls()}
 const lbls=[];function clearLbls(){lbls.forEach(l=>l.el.remove());lbls.length=0}
 function addLbl(text,pos,color){const d=el('div','lbl',text);if(color)d.style.borderLeft='5px solid '+color;$('labels').appendChild(d);lbls.push({el:d,pos:pos.clone()});return d}
 function start(k){markTab(k);mode=k;resetScene();$('bNext').style.display='';$('bHint').style.display='';
+ if(k==='b1'){S=null;startLib();return}
  if(k==='b2'){startB2();return}
  if(k==='c1'||k==='c2'){S=null;startCare(k);return}
  if(k==='c3'){S=null;startPractice();return}
@@ -377,7 +379,7 @@ function stepNext(){S.step++;S.sub=1;if(S.step===5){SHADE.mark.material.opacity=
 function next(){if(care){if(!$('bNext').disabled)careEval();return}if(!S||$('bNext').disabled)return;if(S.step===1){placeTray();S.step=2;work.visible=true;soilVis();
   Object.keys(ITEMS).forEach(id=>{if(!S.taken.includes(id)){ITEMS[id].g.visible=false}});camTarget(1.0,1.6,.5,8.2,.95,0);renderStep('Đã sẵn sàng. Cầm xẻng nhỏ rồi xúc giá thể vào chậu.');return}
  if(S.step===5){if(S.a.key==='proj'){projDisplay();return}showEval();return}stepNext()}
-function hint(){if(care){careHint();return}if(mode==='proj'&&!S){projHint();return}if(mode==='c3'){fb('💡 Quan sát lá, giá thể, sâu. Bấm vào từng chậu rồi chọn lí do.');return}if(!S&&mode!=='b2')return;
+function hint(){if(mode==='b1'){libHint();return}if(care){careHint();return}if(mode==='proj'&&!S){projHint();return}if(mode==='c3'){fb('💡 Quan sát lá, giá thể, sâu. Bấm vào từng chậu rồi chọn lí do.');return}if(!S&&mode!=='b2')return;
  if(mode==='b2'){b2Hint();return}
  const st=S.step;const a=S.a;let m='';
  if(st===1)m='Cần: '+a.req.filter(id=>!S.taken.includes(id)).map(id=>ITEMS[id].name).join(', ')+'.';
@@ -649,12 +651,17 @@ let cornerSign=null;
  g.add(box(.6,.4,.3,mat('#c9352b'),5.2,.2,.5));
  const cv=document.createElement('canvas');cv.width=512;cv.height=160;const tx=new THREE.CanvasTexture(cv);tx.encoding=THREE.sRGBEncoding;const sm=new THREE.Mesh(new THREE.PlaneGeometry(4.2,1.3),new THREE.MeshBasicMaterial({map:tx}));sm.position.set(1.8,3.6,-.62);g.add(sm);cornerSign={cv,tx}})();
 function drawSign(l1,l2){const c=cornerSign.cv.getContext('2d');c.fillStyle='#1d5fd1';c.fillRect(0,0,512,160);c.fillStyle='#fff';c.fillRect(10,10,492,140);c.fillStyle='#1d5fd1';c.textAlign='center';c.font='800 38px sans-serif';c.fillText(l1,256,70);c.fillStyle='#2f7a3a';c.font='600 26px sans-serif';c.fillText(l2,256,116);cornerSign.tx.needsUpdate=true}
-const THEMES=[{k:'1120',n:'Ngày Nhà giáo Việt Nam 20/11',sg:['cuc','huongduong'],tip:'Hoa tri ân thầy cô: cúc, hướng dương.'},{k:'83',n:'Ngày Quốc tế Phụ nữ 8/3',sg:['duacan','muoi'],tip:'Hoa tươi sắc tặng cô và mẹ: dừa cạn, mười giờ.'},{k:'1020',n:'Ngày Phụ nữ Việt Nam 20/10',sg:['duacan','cuc'],tip:'Hoa rực rỡ: dừa cạn, cúc.'},{k:'tet',n:'Tết và mùa xuân',sg:['songdoi','cuc'],tip:'Sức sống mới: sống đời, cúc.'}];
+const THEMES=[{k:'1120',n:'Ngày Nhà giáo Việt Nam 20/11',sg:['cuc','huongduong'],tip:'Hoa tri ân thầy cô: cúc, hướng dương.'},{k:'83',n:'Ngày Quốc tế Phụ nữ 8/3',sg:['hong','duacan','muoi'],tip:'Hoa tươi sắc tặng cô và mẹ: hồng, dừa cạn, mười giờ.'},{k:'1020',n:'Ngày Phụ nữ Việt Nam 20/10',sg:['hong','duacan'],tip:'Hoa rực rỡ: hồng, dừa cạn.'},{k:'tet',n:'Tết và mùa xuân',sg:['songdoi','cuc'],tip:'Sức sống mới: sống đời, cúc.'},{k:'xanh',n:'Góc học tập xanh (cây cảnh để bàn)',sg:['phuquy','trauba','senda','xuongrong'],tip:'Cây cảnh để bàn, thanh lọc không khí: phú quý, trầu bà, sen đá, xương rồng.'}];
 const FL=[{k:'cuc',n:'Hoa cúc',kind:'plant',N:3,item:'plantCuc',grp:1,water:[45,85],mk:()=>mkCuc(1.3),mean:'Hoa cúc vàng tượng trưng cho lòng biết ơn và sự tri ân.'},
  {k:'huongduong',n:'Hoa hướng dương',kind:'seed',N:5,item:'seedSun',grp:1,water:[45,85],mk:null,mean:'Hoa hướng dương luôn hướng về phía mặt trời, như chúng em hướng về thầy cô.'},
  {k:'duacan',n:'Hoa dừa cạn',kind:'plant',N:5,item:'seedPeri',grp:1,water:[45,85],mk:()=>mkPeri(1.0,{n:2}),mean:'Hoa dừa cạn nở quanh năm, tượng trưng cho sức sống bền bỉ.'},
  {k:'muoi',n:'Hoa mười giờ',kind:'plant',N:6,item:'plantMuoi',grp:1,water:[45,85],mk:()=>mkMuoi(1.2,true),mean:'Hoa mười giờ nở rực rỡ khi nắng lên, mang đến niềm vui cho lớp học.'},
- {k:'songdoi',n:'Hoa sống đời',kind:'plant',N:3,item:'plantSongDoi',grp:0,water:[30,65],mk:()=>mkSongDoi(1.3),mean:'Hoa sống đời có sức sống mãnh liệt, chúc cả lớp luôn khoẻ mạnh và kiên trì.'}];
+ {k:'songdoi',n:'Hoa sống đời',kind:'plant',N:3,item:'plantSongDoi',grp:0,water:[30,65],mk:()=>mkSongDoi(1.3),mean:'Hoa sống đời có sức sống mãnh liệt, chúc cả lớp luôn khoẻ mạnh và kiên trì.'},
+ {k:'hong',n:'Hoa hồng',kind:'plant',N:2,item:'plantHong',grp:1,water:[45,85],mk:()=>mkHong(1.7),mean:'Hoa hồng tượng trưng cho tình yêu thương và lòng biết ơn.'},
+ {k:'xuongrong',n:'Cây xương rồng',kind:'plant',N:1,item:'plantXuongRong',grp:0,water:[25,55],mk:()=>mkXuongRong(2.2),mean:'Cây xương rồng chịu hạn giỏi, tượng trưng cho sức sống kiên cường, vượt khó.'},
+ {k:'senda',n:'Cây sen đá',kind:'plant',N:3,item:'plantSenDa',grp:0,water:[25,55],mk:()=>mkSenDa(1.9),mean:'Cây sen đá nhỏ xinh như đoá sen, mang lại sự bình yên cho góc học tập.'},
+ {k:'trauba',n:'Cây trầu bà',kind:'plant',N:2,item:'plantTrauBa',grp:2,water:[45,85],mk:()=>mkTrauBa(1.7),mean:'Cây trầu bà lá hình trái tim, biểu tượng của sự phát triển thịnh vượng.'},
+ {k:'phuquy',n:'Cây phú quý',kind:'plant',N:1,item:'plantPhuQuy',grp:2,water:[40,80],mk:()=>mkPhuQuy(2.0),mean:'Cây phú quý tượng trưng cho sự giàu sang, may mắn và thịnh vượng.'}];
 const POTK=[['nhua','Chậu nhựa'],['gom','Chậu gốm, sứ'],['go','Chậu gỗ'],['ximang','Chậu xi măng'],['thuytinh','Chậu thuỷ tinh']];
 const SUBK=SUBS.map(s=>[s.k,s.n]);
 const MEMBERS=['An','Bình','Chi','Dũng'],JOBS=[['prep','Chuẩn bị vật liệu, dụng cụ'],['fill','Cho giá thể vào chậu'],['plant','Gieo hạt/trồng cây'],['care','Tưới nước, đặt chậu, dọn dẹp']];
@@ -688,10 +695,10 @@ function planCheck(){const P=PJ,issues=[];
 function startProjectBuild(){const P=PJ,F=FL.find(x=>x.k===P.flower),T=THEMES.find(x=>x.k===P.theme);
  const a={key:'proj',bai:'Dự án 1',title:'Chậu '+F.n.toLowerCase()+' · '+T.n,kind:F.kind,N:F.N,tool3:P.tools.fork?'fork':'trowel',req:[F.item,'potOk','soil','trowel','gloves','can'].concat(P.tools.fork?['fork']:[]),opt:['fork','shears','gravel'],plant:F.item,water:F.water,mk:F.mk,why:{},
   steps:['Chuẩn bị vật liệu, vật dụng, dụng cụ ('+P.roles.prep+')','Cho giá thể vào chậu cách miệng 2–5 cm ('+P.roles.fill+')',(F.kind==='seed'?'Gieo '+F.N+' hạt: tạo lỗ → cho hạt → phủ giá thể mỏng':'Trồng '+F.N+' cây: tạo hốc → cho cây → vun giá thể')+' ('+P.roles.plant+')','Tưới nước đủ ẩm ('+P.roles.care+')','Đặt chậu nơi phù hợp, cất dụng cụ, vệ sinh ('+P.roles.care+')']};
- ['plantCuc','plantSongDoi','plantMuoi','plantLuoiHo','seedPeri','seedSun','seedDry','plantSick'].forEach(id=>{if(id!==F.item)a.why[id]='Nhóm em đã chọn '+F.n.toLowerCase()+' — không dùng loại này.'});
+ ALLP.forEach(id=>{if(id!==F.item)a.why[id]='Nhóm em đã chọn '+F.n.toLowerCase()+' — không dùng loại này.'});
  resetScene();swapItemPot(P.pot);setWorkPot(P.pot);
  const order=['gloves','trowel','fork','can','shears'];order.forEach((id,i)=>{HOME[id]=new THREE.Vector3(-4+i*2,1.09,.6);ITEMS[id].g.position.copy(HOME[id]);ITEMS[id].g.visible=true});
- const others=['plantCuc','plantSongDoi','plantMuoi','plantLuoiHo','seedPeri','seedSun','plantSick','seedDry'].filter(id=>id!==F.item).sort(()=>Math.random()-.5).slice(0,3);
+ const others=ALLP.filter(id=>id!==F.item).sort(()=>Math.random()-.5).slice(0,3);
  const mats=['potOk','potGlass','soil','gravel',F.item].concat(others).sort(()=>Math.random()-.5);
  mats.forEach((id,i)=>{HOME[id]=new THREE.Vector3(-4.3+i*1.2,1.09,-1.2);ITEMS[id].g.position.copy(HOME[id]);ITEMS[id].g.visible=true});
  S=newState(a);$('bNext').style.display='';camTarget(1.1,1.0,-.2,10.5,.85,0);renderStep('Kế hoạch đã được chốt! Nhóm em bắt đầu thực hiện: lấy đúng vật liệu, dụng cụ vào khay.','ok')}
@@ -715,6 +722,63 @@ function projFinal(){const P=PJ,F=FL.find(x=>x.k===P.flower),T=THEMES.find(x=>x.
  h+='</table><div class="card"><h3>Sản phẩm của nhóm</h3>Chậu '+F.n.toLowerCase()+' ('+POTK.find(x=>x[0]===P.pot)[1].toLowerCase()+', giá thể '+SUBS.find(x=>x.k===P.sub).n.toLowerCase()+').<br><i>'+(P.meaning||'').replace(/</g,'&lt;')+'</i><br><small>Phân công: '+JOBS.map(j=>j[1].split(' ')[0]+' '+j[1].split(' ').slice(1,3).join(' ')+' → '+P.roles[j[0]]).join(' · ')+'</small></div><div class="row"><button class="btn go" id="ovAgain">Làm dự án mới</button><button class="btn" id="ovPrint">In phiếu</button><button class="btn" id="ovClose">Đóng</button></div>';
  $('ovIn').innerHTML=h;$('ov').hidden=false;$('ovAgain').onclick=()=>{$('ov').hidden=true;start('proj')};$('ovClose').onclick=()=>{$('ov').hidden=true};$('ovPrint').onclick=()=>{try{window.print()}catch(e){}}}
 
+/* ======== HOA, CÂY CẢNH MỚI + BÀI 1 ======== */
+TX.pothos=ctex(128,128,(c,w,h)=>{c.fillStyle='#1d6a36';c.fillRect(0,0,w,h);for(let i=0;i<90;i++){c.fillStyle='rgba('+(Math.random()<.5?'235,225,90':'200,225,100')+','+rr(.25,.7)+')';c.beginPath();c.ellipse(Math.random()*w,Math.random()*h,rr(2,9),rr(1,4),Math.random()*3,0,7);c.fill()}},[1,1]);
+TX.phuquy=ctex(64,128,(c,w,h)=>{c.fillStyle='#1f5a2e';c.fillRect(0,0,w,h);const g=c.createLinearGradient(0,0,w,0);g.addColorStop(.25,'rgba(220,60,90,0)');g.addColorStop(.5,'rgba(235,70,100,.95)');g.addColorStop(.75,'rgba(220,60,90,0)');c.fillStyle=g;c.fillRect(0,0,w,h);c.strokeStyle='rgba(250,200,210,.7)';c.lineWidth=2;c.beginPath();c.moveTo(w/2,0);c.lineTo(w/2,h);c.stroke();speck(c,w,h,['#3f8a4a','#245a30'],300,1,3)},[1,1]);
+function roseBloom(col,sc){const f=new THREE.Group();const pm=mat(col,{roughness:.45});[[5,.03,.0,.5],[7,.05,.012,.35],[9,.07,.024,.2],[3,.015,-.005,.9]].forEach(r=>{for(let i=0;i<r[0];i++){const a=i/r[0]*6.283+r[2]*40;const pt=new THREE.Mesh(new THREE.SphereGeometry(.045,8,6),pm);pt.scale.set(1,.55,.35);pt.position.set(Math.cos(a)*r[1],r[2]+.02,Math.sin(a)*r[1]);pt.rotation.set(0,-a,r[3]);pt.castShadow=true;f.add(pt)}});f.scale.setScalar(sc||1);return f}
+function mkHong(sc){const g=new THREE.Group();const stm=mat('#4f8a3a',{roughness:.5}),lm=mat('#1c5a28',{roughness:.3});
+ for(let s=0;s<3;s++){const a=s/3*6.283+.5,h=.5+Math.random()*.12,ln=.1;g.add(tube([[0,0,0],[Math.cos(a)*ln*.5,h*.5,Math.sin(a)*ln*.5],[Math.cos(a)*ln,h,Math.sin(a)*ln]],.014,stm,8));
+  for(let k=0;k<4;k++){const u=.2+k*.2,bx=Math.cos(a)*ln*u,by=h*u,bz=Math.sin(a)*ln*u;const th=new THREE.Mesh(new THREE.ConeGeometry(.008,.03,4),mat('#7a3a2a'));th.position.set(bx+.012,by,bz);th.rotation.z=-1.2;g.add(th);
+   [-1,1].forEach(sd=>{const lf=new THREE.Mesh(new THREE.SphereGeometry(.05,8,6),lm);lf.scale.set(1.5,.15,.8);lf.position.set(bx+Math.cos(a+1.57)*sd*.06,by,bz+Math.sin(a+1.57)*sd*.06);lf.rotation.y=-a+(sd>0?.5:-.5);lf.rotation.z=.2*sd;g.add(lf)})}
+  const b=roseBloom(s===1?'#e8466b':'#c81e3c',1.1);b.position.set(Math.cos(a)*ln,h+.02,Math.sin(a)*ln);g.add(b)}
+ g.scale.setScalar(sc);return g}
+function mkXuongRong(sc){const g=new THREE.Group();const gm=mat('#2a7243',{roughness:.65});
+ function column(r,h,x,z,tilt){const geo=new THREE.CylinderGeometry(r*.85,r,h,24,10);const ps=geo.attributes.position;for(let i=0;i<ps.count;i++){const x0=ps.getX(i),z0=ps.getZ(i),th=Math.atan2(z0,x0),f=1+.14*Math.cos(th*8);ps.setX(i,x0*f);ps.setZ(i,z0*f)}geo.computeVertexNormals();const m=new THREE.Mesh(geo,gm);m.position.set(x,h/2,z);m.rotation.z=tilt||0;m.castShadow=true;
+  for(let k=0;k<8;k++)for(let j=0;j<6;j++){const sp=new THREE.Mesh(new THREE.ConeGeometry(.006,.05,4),mat('#f4efd8'));const th=k/8*6.283;sp.position.set(Math.cos(th)*r*1.08,(j/6-.5)*h*.9,Math.sin(th)*r*1.08);sp.rotation.z=-Math.cos(th)*1.4;sp.rotation.x=Math.sin(th)*1.4;m.add(sp)}return m}
+ g.add(column(.1,.55,0,0));const a1=column(.055,.22,.17,0,0);a1.position.y=.3;g.add(a1);const arm=cyl(.05,.05,.17,gm,.095,.3,0,10);arm.rotation.z=Math.PI/2;g.add(arm);
+ const fl=roseBloom('#f06aa8',.55);fl.position.set(0,.58,0);g.add(fl);g.scale.setScalar(sc);return g}
+function mkSenDa(sc){const g=new THREE.Group();const base=mat('#7fb09a',{roughness:.45}),tip=mat('#e48aa6',{roughness:.45});
+ [[8,.075,.05,.55],[8,.045,.085,.8],[6,.02,.115,1.15]].forEach((ly,li)=>{for(let i=0;i<ly[0];i++){const a=i/ly[0]*6.283+li*.4;const lf=new THREE.Mesh(new THREE.SphereGeometry(.05,10,8),base);lf.scale.set(.75,.32,1.5);lf.position.set(Math.cos(a)*ly[1],ly[2],Math.sin(a)*ly[1]);lf.rotation.set(0,-a+Math.PI/2,0);lf.rotateX(-ly[3]);lf.castShadow=true;g.add(lf);const tp=new THREE.Mesh(new THREE.SphereGeometry(.014,6,5),tip);tp.position.set(Math.cos(a)*(ly[1]+.07),ly[2]+.045*ly[3],Math.sin(a)*(ly[1]+.07));g.add(tp)}});
+ g.scale.setScalar(sc);return g}
+function heartGeo(s){const sh=new THREE.Shape();sh.moveTo(0,-.5);sh.bezierCurveTo(-.6,-.1,-.5,.6,0,.3);sh.bezierCurveTo(.5,.6,.6,-.1,0,-.5);const g=new THREE.ShapeGeometry(sh,10);g.scale(s,s,s);return g}
+function mkTrauBa(sc){const g=new THREE.Group();const vm=mat('#5a8f3a',{roughness:.5});const lm=mat('#ffffff',{map:TX.pothos,roughness:.3});lm.side=THREE.DoubleSide;
+ for(let v=0;v<6;v++){const a=v/6*6.283,rr0=.05;const pts=[[Math.cos(a)*rr0,.05,Math.sin(a)*rr0],[Math.cos(a)*.14,.3+(v%2)*.1,Math.sin(a)*.14],[Math.cos(a)*.27,.2,Math.sin(a)*.27],[Math.cos(a)*.34,-.1-(v%3)*.05,Math.sin(a)*.34]];g.add(tube(pts,.009,vm,14));
+  pts.forEach((q,i)=>{if(i===0)return;const lf=new THREE.Mesh(heartGeo(.15),lm);lf.position.set(q[0],q[1],q[2]);lf.rotation.set(-.9+i*.15,-a+Math.PI/2,0);lf.castShadow=true;g.add(lf)})}
+ g.scale.setScalar(sc);return g}
+function mkPhuQuy(sc){const g=new THREE.Group();const m=mat('#ffffff',{map:TX.phuquy,roughness:.35});m.side=THREE.DoubleSide;const pm=mat('#6aa84f');
+ for(let i=0;i<8;i++){const a=i/8*6.283+i*.3,L=.34+(i%3)*.07,W=.12;const h=.12+(i%2)*.05;g.add(tube([[0,0,0],[Math.cos(a)*.05,h*.7,Math.sin(a)*.05],[Math.cos(a)*.1,h,Math.sin(a)*.1]],.008,pm,6));
+  const lf=new THREE.Mesh(leafGeo(L,W,.25,8),m);lf.position.set(Math.cos(a)*.1,h,Math.sin(a)*.1);lf.rotation.y=-a+Math.PI/2;lf.rotation.x=.35+(i%2)*.15;lf.castShadow=true;g.add(lf)}
+ g.scale.setScalar(sc);return g}
+[['plantHong','Cây hoa hồng con khoẻ','hong'],['plantXuongRong','Cây xương rồng con khoẻ','xuongrong'],['plantSenDa','Cây sen đá con khoẻ','senda'],['plantTrauBa','Cây trầu bà con khoẻ','trauba'],['plantPhuQuy','Cây phú quý con khoẻ','phuquy']].forEach(x=>{reg(x[0],x[1],mkNursery(x[2]));ITEMS[x[0]].type='plant';ITEMS[x[0]].g.visible=false});
+const ALLP=['plantCuc','plantSongDoi','plantMuoi','plantLuoiHo','seedPeri','seedSun','seedDry','plantSick','plantHong','plantXuongRong','plantSenDa','plantTrauBa','plantPhuQuy'];
+/* ---- BÀI 1: hoa và cây cảnh quanh em ---- */
+const GRPN=['Giá thể tơi xốp, thoáng khí, thoát nước (vỏ trấu, vụn than, sỏi cát)','Giá thể tơi xốp, giữ nước vừa phải (đất mùn, than bùn, rơm mục, đất nung)','Giá thể giữ nước tốt (xơ dừa, mùn cưa, trấu hun)'];
+const PLANTS=[
+ {k:'muoi',nk:'muoi',n:'Hoa mười giờ',ty:'Hoa',dac:'Hoa thường nở rộ vào lúc 10 giờ sáng; nhiều màu như tím, đỏ, vàng, cam; khi nở cánh hoa xoè tròn, nhị hoa vàng óng.',yn:'Tượng trưng cho sự quyết đoán, chân thành.',sang:'Cần nhiều ánh sáng',gt:1,nuoc:'Tưới vừa đủ ẩm'},
+ {k:'cuc',nk:'cuc',n:'Hoa cúc',ty:'Hoa',dac:'Nhiều cánh nhỏ xếp thành vòng quanh nhị hoa; thường màu vàng hoặc trắng.',yn:'Tượng trưng cho lòng biết ơn, tri ân; hoa phơi khô có thể pha trà, giúp giải nhiệt.',sang:'Cần nhiều ánh sáng',gt:1,nuoc:'Tưới vừa đủ ẩm'},
+ {k:'duacan',nk:'peri',n:'Hoa dừa cạn',ty:'Hoa',dac:'Hoa năm cánh màu hồng hoặc trắng, lá xanh bóng hình bầu dục; nở quanh năm.',yn:'Tượng trưng cho sức sống bền bỉ.',sang:'Đặt ở sân, nhiều ánh sáng',gt:1,nuoc:'Tưới vừa đủ, khoảng 2 lần/ngày'},
+ {k:'hong',nk:'hong',n:'Hoa hồng',ty:'Hoa',dac:'Thân có gai; hoa nhiều lớp cánh xếp chồng, màu đỏ, hồng hoặc vàng; có mùi thơm; lá xanh đậm mép răng cưa.',yn:'Tượng trưng cho tình yêu thương và lòng biết ơn; dùng làm quà tặng, hương liệu.',sang:'Cần nhiều ánh sáng',gt:1,nuoc:'Tưới vừa đủ ẩm'},
+ {k:'songdoi',nk:'songdoi',n:'Cây hoa sống đời',ty:'Hoa',dac:'Lá dày, mọng nước, mép tròn; hoa nhỏ mọc thành chùm màu đỏ hoặc cam.',yn:'Biểu tượng của sức sống mãnh liệt; lá thường dùng chữa bỏng, cầm máu.',sang:'Ưa sáng',gt:0,nuoc:'Ít nước'},
+ {k:'luoiho',nk:'luoiho',n:'Cây lưỡi hổ',ty:'Cây cảnh',dac:'Cây có màu xanh đậm, lá cứng, dày, trông như ngọn giáo, viền lá màu vàng từ gốc lên đến ngọn.',yn:'Tượng trưng cho sự may mắn, thăng tiến; trồng làm cảnh, thanh lọc không khí trong nhà.',sang:'Ít ánh sáng, đặt trong phòng',gt:0,nuoc:'Rất ít nước (phun sương 1 lần/tuần)'},
+ {k:'xuongrong',nk:'xuongrong',n:'Cây xương rồng',ty:'Cây cảnh',dac:'Thân mọng nước, có nhiều gai thay cho lá; chịu hạn giỏi, đôi khi nở hoa.',yn:'Tượng trưng cho sức sống kiên cường; dễ trồng, hợp để bàn.',sang:'Cần nhiều ánh sáng',gt:0,nuoc:'Rất ít nước'},
+ {k:'senda',nk:'senda',n:'Cây sen đá',ty:'Cây cảnh',dac:'Lá dày, mọng nước xếp thành hình hoa thị như bông sen; màu xanh xám, đầu lá hồng.',yn:'Nhỏ xinh, dùng trang trí bàn học, quà tặng; mang lại cảm giác bình yên.',sang:'Ưa sáng vừa',gt:0,nuoc:'Ít nước'},
+ {k:'trauba',nk:'trauba',n:'Cây trầu bà',ty:'Cây cảnh',dac:'Cây thân leo, thân tròn, nhiều rễ; mọc thành giàn leo cao hoặc rủ từ chậu xuống; lá gần giống hình trái tim, xanh bóng, thon dài ở phần đuôi.',yn:'Biểu tượng của sự phát triển thịnh vượng; thanh lọc không khí.',sang:'Ít đến vừa ánh sáng',gt:2,nuoc:'Tưới vừa đủ, giữ ẩm'},
+ {k:'phuquy',nk:'phuquy',n:'Cây phú quý',ty:'Cây cảnh',dac:'Lá hình bầu dục dài, xanh đậm, giữa lá có màu đỏ hồng nổi bật.',yn:'Tượng trưng cho sự giàu sang, may mắn; thường đặt trong nhà.',sang:'Ít ánh sáng, đặt trong phòng',gt:2,nuoc:'Tưới vừa đủ'}];
+const libG=new THREE.Group();scene.add(libG);libG.visible=false;let lib=null;
+(function(){PLANTS.forEach((p,i)=>{const g=new THREE.Group();const m=mkNursery(p.nk);m.scale.setScalar(2.4);g.add(m);const row=Math.floor(i/5),col=i%5;g.position.set(-4+col*2,1.09,-.9+row*2.0);g.userData.lib=i;g.traverse(o=>{o.userData.lib=i});libG.add(g)})})();
+function startLib(){lib={sel:null,quiz:null,qa:0,ok:0,order:[]};libG.visible=true;$('bNext').style.display='none';$('bHint').style.display='';camTarget(1.1,1.6,-.2,9.2,.8,0);renderLib()}
+function libLabels(){clearLbls();PLANTS.forEach((p,i)=>{const row=Math.floor(i/5),col=i%5;addLbl(lib.quiz?'?':p.n,new THREE.Vector3(-4+col*2,2.6,-.9+row*2.0),lib.sel===i?'#1d5fd1':(p.ty==='Hoa'?'#e0488a':'#2f9a55'))})}
+function renderLib(msg,type){bodyEl.textContent='';$('pSub').textContent='Bài 1 · Công nghệ 4 · Chân trời sáng tạo';$('pTitle').textContent='Hoa và cây cảnh quanh em';
+ if(lib.quiz){const q=PLANTS[lib.order[lib.qa]];bodyEl.appendChild(el('div','card','<h3>Đố vui '+(lib.qa+1)+'/'+lib.order.length+'</h3><b>Đặc điểm:</b> '+q.dac+'<br><b>Ý nghĩa:</b> '+q.yn+'<br><small>Bấm vào đúng loại hoa hoặc cây cảnh trên bàn.</small>'))}
+ else if(lib.sel!=null){const p=PLANTS[lib.sel];bodyEl.appendChild(el('div','card','<h3>'+p.n+' <span class="tag '+(p.ty==='Hoa'?'d':'t')+'">'+p.ty+'</span></h3><b>Đặc điểm:</b> '+p.dac+'<br><b>Ý nghĩa, lợi ích:</b> '+p.yn+'<br><b>Ánh sáng:</b> '+p.sang+'<br><b>Nước:</b> '+p.nuoc+'<br><b>Giá thể hợp:</b> '+GRPN[p.gt]))}
+ else bodyEl.appendChild(el('div','card','<h3>Quan sát 10 loại hoa và cây cảnh</h3>Bấm vào từng cây để đọc <b>đặc điểm, ý nghĩa, lợi ích</b>. Màu nhãn hồng là <b>hoa</b>, màu xanh là <b>cây cảnh</b>.<br>Ghi nhớ: hoa và cây cảnh dùng làm đẹp không gian, quà tặng, thực phẩm, hương liệu, giúp thanh lọc không khí.'));
+ const r=el('div','row');const q=el('button','btn'+(lib.quiz?' on':''),lib.quiz?'Dừng đố vui':'Đố vui: đoán tên cây');q.onclick=()=>{if(lib.quiz){lib.quiz=null}else{lib.quiz=1;lib.order=PLANTS.map((p,i)=>i).sort(()=>Math.random()-.5).slice(0,5);lib.qa=0;lib.ok=0;lib.sel=null}renderLib()};r.appendChild(q);bodyEl.appendChild(r);
+ const f=el('div','fb');f.id='fb';bodyEl.appendChild(f);fb(msg||'Chọn một cây trên bàn.',type);libLabels()}
+function libHint(){if(lib.quiz){const q=PLANTS[lib.order[lib.qa]];fb('💡 Đây là '+(q.ty==='Hoa'?'một loại hoa':'một cây cảnh')+', '+q.sang.toLowerCase()+'.')}else fb('💡 Hoa thường có cánh màu sắc; cây cảnh được trồng chủ yếu vì lá, dáng cây.')}
+function libClick(px,py){const h=pick(px,py,libG.children);if(!h)return;let o=h.object;while(o&&o.userData.lib==null)o=o.parent;if(!o)return;const i=o.userData.lib;
+ if(lib.quiz){const want=lib.order[lib.qa];if(i===want){lib.ok++;lib.qa++;if(lib.qa>=lib.order.length){const ok=lib.ok;lib.quiz=null;return renderLib('Hoàn thành đố vui! Em đoán đúng '+ok+'/'+lib.order.length+' cây. 🌿','ok')}return renderLib('Đúng rồi, đó là '+PLANTS[want].n+'! Câu tiếp theo:','ok')}{let q=h.object;while(q.parent&&q.parent!==libG)q=q.parent;anim.push({g:q,t:0,type:'shake',x:q.position.x})}fb('Chưa đúng. Hãy đọc lại đặc điểm và ý nghĩa.','no');return}
+ lib.sel=i;renderLib()}
+
 /* ======== CAMERA & ĐIỀU KHIỂN ======== */
 const cam={tx:0,ty:1.3,tz:0,dist:9,pitch:.7,yaw:0};const goal={tx:0,ty:1.3,tz:0,dist:9,pitch:.7,yaw:0};
 function camTarget(x,y,z,d,p,yw){Object.assign(goal,{tx:x,ty:y,tz:z,dist:d,pitch:p,yaw:yw||0})}
@@ -730,6 +794,7 @@ const ray=new THREE.Raycaster(),mv=new THREE.Vector2();
 function pick(px,py,objs){mv.set(px/innerWidth*2-1,-(py/innerHeight)*2+1);ray.setFromCamera(mv,camera);const vis=o=>{while(o){if(!o.visible)return false;o=o.parent}return true};const h=ray.intersectObjects(objs,true).filter(x=>vis(x.object));return h.length?h[0]:null}
 function rootOf(o){while(o&&!(o.userData&&(o.userData.kind==='item'||o.userData.kind==='b2pot'||o.userData.kind==='b2sub'||o.userData.kind==='shade')))o=o.parent;return o}
 function click(px,py){
+ if(mode==='b1'){libClick(px,py);return}
  if(care){careClick(px,py);return}
  if(mode==='c3'){prClick(px,py);return}
  if(mode==='b2'){const h=pick(px,py,b2g.children.concat(Object.values(ITEMS).map(i=>i.g)));if(h){const r=rootOf(h.object);if(r)b2Click(r)}return}
@@ -776,7 +841,7 @@ function frame(){const dt=Math.min(clock.getDelta(),.05);T+=dt;
 function resize(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();if(innerWidth<760){goal.dist=Math.max(goal.dist,10)}}
 addEventListener('resize',resize);resize();
 /* màn hình chào */
-(function(){bodyEl.innerHTML='<div class="card"><h3>Chào em! 🌱</h3>Đây là <b>vườn ươm 3D</b> theo sách Công nghệ 4 (Chân trời sáng tạo), <b>Bài 2 → Bài 5 và Dự án 1</b>. Chọn một bài ở thanh phía trên để bắt đầu:<ul><li><b>Bài 2</b>: nhận biết chậu, giá thể, dụng cụ.</li><li><b>Bài 3</b>: gieo hạt hướng dương, trồng hoa mười giờ.</li><li><b>Bài 4</b>: trồng cây lưỡi hổ.</li><li><b>Bài 5</b>: chăm sóc dừa cạn, lưỡi hổ + luyện tập.</li><li><b>Dự án 1</b>: trồng hoa trang trí lớp học.</li></ul>Kéo chuột để xoay, lăn để phóng to. Bấm vào vật để cầm hoặc dùng.</div><div class="card"><h3>An toàn lao động</h3>Dùng dụng cụ theo hướng dẫn của giáo viên, không đùa giỡn; vệ sinh khu vực và cất dụng cụ đúng nơi quy định.</div>';
+(function(){bodyEl.innerHTML='<div class="card"><h3>Chào em! 🌱</h3>Đây là <b>vườn ươm 3D</b> theo sách Công nghệ 4 (Chân trời sáng tạo), <b>Bài 1 → Bài 5 và Dự án 1</b>. Chọn một bài ở thanh phía trên để bắt đầu:<ul><li><b>Bài 1</b>: nhận biết 10 loại hoa, cây cảnh + đố vui.</li><li><b>Bài 2</b>: nhận biết chậu, giá thể, dụng cụ.</li><li><b>Bài 3</b>: gieo hạt hướng dương, trồng hoa mười giờ.</li><li><b>Bài 4</b>: trồng cây lưỡi hổ.</li><li><b>Bài 5</b>: chăm sóc dừa cạn, lưỡi hổ + luyện tập.</li><li><b>Dự án 1</b>: trồng hoa trang trí lớp học.</li></ul>Kéo chuột để xoay, lăn để phóng to. Bấm vào vật để cầm hoặc dùng.</div><div class="card"><h3>An toàn lao động</h3>Dùng dụng cụ theo hướng dẫn của giáo viên, không đùa giỡn; vệ sinh khu vực và cất dụng cụ đúng nơi quy định.</div>';
  $('bNext').style.display='none';$('bHint').style.display='none';
  ['gloves','trowel','fork','can','shears'].forEach(id=>ITEMS[id].g.visible=true);ORDER_MATS.forEach(id=>ITEMS[id].g.visible=true);camTarget(1.2,1.2,-.3,12,.8,.2);cam.yaw=.6;cam.dist=16})();
 frame();setTimeout(()=>{$('load').style.opacity=0;setTimeout(()=>$('load').remove(),700)},400);
