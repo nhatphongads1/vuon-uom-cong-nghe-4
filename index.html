@@ -267,7 +267,7 @@ function heldChip(){const h=$('held');if(!held){h.classList.remove('on');return}
 function setHeld(h){held=held===h?null:h;heldChip();Object.keys(ITEMS).forEach(id=>{ITEMS[id].g.userData.sel=false});renderCursor()}
 function renderCursor(){renderer.domElement.style.cursor=held?'crosshair':'pointer'}
 /* ======== Menu bài ======== */
-const TABS=[['b1','Bài 1 · Hoa, cây cảnh quanh em'],['b2','Bài 2 · Vật liệu, dụng cụ'],['sun','Bài 3 · Gieo hạt hướng dương'],['muoi','Bài 3 · Trồng hoa mười giờ'],['luoiho','Bài 4 · Trồng cây lưỡi hổ'],['c1','Bài 5 · Chăm sóc dừa cạn'],['c2','Bài 5 · Chăm sóc lưỡi hổ'],['c3','Bài 5 · Luyện tập'],['proj','Dự án 1 · Trang trí lớp học']];
+const TABS=[['b1','Bài 1 · Hoa, cây cảnh quanh em'],['b2','Bài 2 · Vật liệu, dụng cụ'],['sun','Bài 3 · Gieo hạt hướng dương'],['muoi','Bài 3 · Trồng hoa mười giờ'],['luoiho','Bài 4 · Trồng cây cảnh'],['c1','Bài 5 · Chăm sóc hoa'],['c2','Bài 5 · Chăm sóc cây cảnh'],['c3','Bài 5 · Luyện tập'],['proj','Dự án 1 · Trang trí lớp học']];
 TABS.forEach(t=>{const b=el('button','btn',t[1]);b.dataset.k=t[0];b.onclick=()=>start(t[0]);$('tabs').appendChild(b)});
 function markTab(k){[...$('tabs').children].forEach(b=>b.classList.toggle('on',b.dataset.k===k))}
 /* ======== Khởi tạo hoạt động trồng ======== */
@@ -284,6 +284,7 @@ const lbls=[];function clearLbls(){lbls.forEach(l=>l.el.remove());lbls.length=0}
 function addLbl(text,pos,color){const d=el('div','lbl',text);if(color)d.style.borderLeft='5px solid '+color;$('labels').appendChild(d);lbls.push({el:d,pos:pos.clone()});return d}
 function start(k){markTab(k);mode=k;resetScene();$('bNext').style.display='';$('bHint').style.display='';
  if(k==='b1'){S=null;startLib();return}
+ if(k==='luoiho'){S=null;startOrnChoose();return}
  if(k==='b2'){startB2();return}
  if(k==='c1'||k==='c2'){S=null;startCare(k);return}
  if(k==='c3'){S=null;startPractice();return}
@@ -308,7 +309,7 @@ function renderStep(msg,type){
   const r=el('div','row');const b1=el('button','btn','Nén nhẹ');b1.onclick=()=>press();const b2=el('button','btn','Đổ bớt');b2.onclick=()=>scoop(-1);r.appendChild(b1);r.appendChild(b2);c.appendChild(r);
   const dist=Math.max(0,POT_H*10-S.fill);c.appendChild(gauge('Cách miệng chậu',S.fill,15,10,13,dist.toFixed(1)+' cm (cần 2–5 cm) · nén '+S.press+' lần'))}
  else if(st===3){const sub=S.sub,a2=a;const nm=a.kind==='seed'?'hạt':'cây',lo=a.kind==='seed'?'lỗ':'hốc';
-  const names=a.kind==='seed'?['Tạo '+a.N+' lỗ cách đều trên mặt giá thể (dùng chĩa ba)','Cho '+a.N+' hạt vào các lỗ','Phủ một lớp giá thể mỏng lên hạt (dùng xẻng)']:(a.N>1?['Tạo '+a.N+' hốc cách đều (dùng chĩa ba)','Cho '+a.N+' cây giống vào các hốc','Vun giá thể giữ cố định gốc cây (dùng xẻng), không nén quá chặt']:['Tạo hốc ở giữa chậu (dùng xẻng nhỏ)','Đặt cây thẳng đứng vào giữa hốc','Lấp kín gốc và rễ, ấn nhẹ cho cây chắc chắn (dùng xẻng)']);
+  const names=a.kind==='seed'?['Tạo '+a.N+' lỗ cách đều trên mặt giá thể (dùng '+(a.tool3==='fork'?'chĩa ba':'xẻng nhỏ')+')','Cho '+a.N+' hạt vào các lỗ','Phủ một lớp giá thể mỏng lên hạt (dùng xẻng)']:(a.N>1?['Tạo '+a.N+' hốc cách đều (dùng '+(a.tool3==='fork'?'chĩa ba':'xẻng nhỏ')+')','Cho '+a.N+' cây giống vào các hốc','Vun giá thể giữ cố định gốc cây (dùng xẻng), không nén quá chặt']:['Tạo hốc ở giữa chậu (dùng xẻng nhỏ)','Đặt cây thẳng đứng vào giữa hốc','Lấp kín gốc và rễ, ấn nhẹ cho cây chắc chắn (dùng xẻng)']);
   const ul=el('ul');names.forEach((t,i)=>ul.appendChild(el('li','',(i+1<sub?'✅ ':i+1===sub?'👉 ':'⬜ ')+'3.'+(i+1)+' '+t)));
   c.innerHTML='<h3>Bước 3. '+(a.kind==='seed'?'Gieo hạt vào chậu':'Trồng cây vào chậu')+'</h3>';c.appendChild(ul);
   const cur=sub===1?'Cầm <b>'+(a.tool3==='fork'?'chĩa ba':'xẻng nhỏ')+'</b> trong khay rồi bấm lên mặt giá thể để tạo '+lo+'. Đã tạo: <b>'+S.holes.length+'/'+a.N+'</b>.':sub===2?'Bấm <b>'+(a.kind==='seed'?'hạt giống':'cây giống')+'</b> trong khay để cầm, rồi bấm vào từng '+lo+'. Đã cho: <b>'+S.seeds+'/'+a.N+'</b>.':'Cầm <b>xẻng nhỏ</b> rồi bấm vào từng '+lo+' để '+(a.kind==='seed'?'phủ giá thể mỏng':'vun giá thể')+'. Đã làm: <b>'+S.covered+'/'+a.N+'</b>.';
@@ -373,7 +374,7 @@ function waterTick(dt){if(!watering||!S||S.step!==4||held!=='can')return;S.moist
  for(let i=0;i<3;i++){const d=new THREE.Mesh(dropGeo,dropMat);d.position.set((Math.random()-.5)*1.4,SY()+1.6,(Math.random()-.5)*1.4);work.add(d);drops.push({m:d,v:3+Math.random()*2})}
  soilVis();const w=S.a.water;const txt=S.moist<w[0]?'còn khô':S.moist<=w[1]?'đủ ẩm':'quá nhiều nước';
  const g=bodyEl.querySelector('.gauge');if(g){g.firstChild.innerHTML='Độ ẩm giá thể: <b>'+txt+'</b>';g.querySelector('.fill').style.width=Math.min(100,S.moist/130*100)+'%'}
- updateNext();if(S.moist>w[1]&&!S.over){S.over=1;fb('Nhiều nước quá rồi — giá thể úng nước, rễ dễ hỏng'+(S.a.key==='luoiho'?' (cây cảnh cần ít nước hơn hoa).':'.'),'no')}else if(S.moist>=w[0]&&S.moist<=w[1])fb('Đủ ẩm rồi! Thả tay ra và bấm "Bước tiếp".','ok')}
+ updateNext();if(S.moist>w[1]&&!S.over){S.over=1;fb('Nhiều nước quá rồi — giá thể úng nước, rễ dễ hỏng'+((S.a.key==='luoiho'||S.a.key==='orn')?' (cây cảnh cần ít nước hơn hoa).':'.'),'no')}else if(S.moist>=w[0]&&S.moist<=w[1])fb('Đủ ẩm rồi! Thả tay ra và bấm "Bước tiếp".','ok')}
 /* ======== Bước 5 & đánh giá ======== */
 function stepNext(){S.step++;S.sub=1;if(S.step===5){SHADE.mark.material.opacity=.9;camTarget(3.6,1.2,.6,13,.7,.05)}renderStep(S.step===5?'Bấm vào rạp bóng râm để đặt chậu cây vào.':null);}
 function next(){if(care){if(!$('bNext').disabled)careEval();return}if(!S||$('bNext').disabled)return;if(S.step===1){placeTray();S.step=2;work.visible=true;soilVis();
@@ -393,8 +394,8 @@ function criteria(){const a=S.a,out=[];const dist=15-S.fill;
  out.push(['Giá thể nén chặt vừa phải và cách miệng chậu 2–5 cm',fillOk?'t':fillMid?'d':'c','Cách miệng '+dist.toFixed(1)+' cm, nén '+S.press+' lần']);
  if(a.kind==='seed'){const c=S.covered===a.N&&S.seeds===a.N;out.push(['Hạt giống được lấp kín bởi một lớp giá thể mỏng',c?'t':S.covered>=a.N*.7?'d':'c',S.covered+'/'+a.N+' lỗ đã phủ'])}
  if(a.N>1){const ev=evenness();out.push([a.kind==='seed'?'Các lỗ gieo cách đều nhau':'Các cây hoa được trồng cách đều nhau',ev<.3?'t':ev<.5?'d':'c','Độ lệch khoảng cách '+(ev*100).toFixed(0)+'%'])}
- if(a.kind==='plant'){const ok=S.covered===a.N;out.push([a.key==='luoiho'?'Gốc và toàn bộ rễ cây được phủ kín bởi giá thể':'Giá thể lấp vừa kín gốc và rễ cây',ok?'t':S.covered>=a.N*.7?'d':'c',S.covered+'/'+a.N+' cây đã vun']);
-  if(a.key==='luoiho'){const h=S.holes[0];const cen=h&&Math.hypot(h.x,h.z)<.35;out.push(['Cây trồng chắc chắn (đặt thẳng, giữa chậu)',ok&&cen?'t':ok?'d':'c',cen?'Cây ở giữa chậu':'Cây lệch khỏi giữa chậu'])}}
+ if(a.kind==='plant'){const ok=S.covered===a.N;out.push([(a.key==='luoiho'||a.key==='orn')?'Gốc và toàn bộ rễ cây được phủ kín bởi giá thể':'Giá thể lấp vừa kín gốc và rễ cây',ok?'t':S.covered>=a.N*.7?'d':'c',S.covered+'/'+a.N+' cây đã vun']);
+  if(a.key==='luoiho'||a.key==='orn'){const h=S.holes[0];const cen=h&&Math.hypot(h.x,h.z)<.35;out.push(['Cây trồng chắc chắn (đặt thẳng, giữa chậu)',ok&&cen?'t':ok?'d':'c',cen?'Cây ở giữa chậu':'Cây lệch khỏi giữa chậu'])}}
  const w=a.water;const mo=S.moist>=w[0]&&S.moist<=w[1];out.push(['Giá thể được tưới đủ ẩm',mo?'t':(S.moist>=w[0]-15&&S.moist<=w[1]+15)?'d':'c',S.moist<w[0]?'còn hơi khô':S.moist>w[1]?'hơi nhiều nước':'đủ ẩm']);
  out.push(['Đặt chậu nơi bóng râm; cất dụng cụ, vệ sinh khu vực',S.shaded&&trayIds().length===0?'t':'d',S.shaded?'đã đặt bóng râm':'chưa đặt bóng râm']);return out}
 function evenness(){const h=S.holes;if(h.length<3)return 1;const nn=h.map(a=>Math.min(...h.filter(b=>b!==a).map(b=>Math.hypot(a.x-b.x,a.z-b.z))));const m=nn.reduce((s,x)=>s+x,0)/nn.length;const v=Math.sqrt(nn.reduce((s,x)=>s+(x-m)**2,0)/nn.length);return v/m}
@@ -518,30 +519,47 @@ const sunSet=new THREE.Group();sunSet.position.set(-8.4,0,1.4);scene.add(sunSet)
 SHADE.g.userData.ck='zone';SHADE.g.userData.zone='shade';SHADE.g.traverse(o=>{o.userData.ck='zone';o.userData.zone='shade';o.userData.obj=SHADE.g});
 [SHADE.g,sunSet].forEach(gr=>gr.traverse(o=>{if(o.isMesh&&o.position.y>1.5)o.raycast=function(){}}));
 let care=null;const cdrops=[];
-const CARE={
- c1:{name:'dừa cạn',title:'Chăm sóc cây dừa cạn trong chậu',light:'sun',tips:['Tưới lượng nước vừa đủ (2 lần/ngày)','Dặm thêm cây vào chỗ mọc thưa','Loại bỏ cỏ dại, xới xốp giá thể','Bón phân định kì','Đặt ở sân — nhiều ánh sáng','Bắt sâu cho cây']},
- c2:{name:'lưỡi hổ',title:'Chăm sóc cây lưỡi hổ trong chậu',light:'shade',tips:['Tưới phun sương (1 lần/tuần)','Tỉa bớt lá bị úa','Xới để làm xốp giá thể','Bón phân bổ sung','Đặt trong phòng — ít ánh sáng','Vệ sinh lá (lau bụi)']}};
+const CARE_P={
+ duacan:{kind:'c1',N:'Dừa cạn',name:'dừa cạn',item:'seedPeri',leafY:.22,mkSpot:()=>mkPeri(1,{n:2}),title:'Chăm sóc cây dừa cạn trong chậu',light:'sun',tips:['Tưới lượng nước vừa đủ (2 lần/ngày)','Dặm thêm cây vào chỗ mọc thưa','Loại bỏ cỏ dại, xới xốp giá thể','Bón phân định kì','Đặt ở sân — nhiều ánh sáng','Bắt sâu cho cây']},
+ hong:{kind:'c1',N:'Hoa hồng',name:'hoa hồng',item:'plantHong',leafY:.3,mkSpot:()=>mkHong(.8),title:'Chăm sóc hoa hồng trong chậu',light:'sun',tips:['Tưới nước vừa đủ ẩm','Dặm thêm cây vào chỗ trống','Loại bỏ cỏ dại, xới xốp giá thể','Bón phân định kì','Đặt ở sân — nhiều ánh sáng','Bắt sâu cho cây']},
+ cuc:{kind:'c1',N:'Hoa cúc',name:'hoa cúc',item:'plantCuc',leafY:.2,mkSpot:()=>mkCuc(.95),title:'Chăm sóc hoa cúc trong chậu',light:'sun',tips:['Tưới nước vừa đủ ẩm','Dặm thêm cây vào chỗ trống','Loại bỏ cỏ dại, xới xốp giá thể','Bón phân định kì','Đặt ở sân — nhiều ánh sáng','Bắt sâu cho cây']},
+ luoiho:{kind:'c2',N:'Lưỡi hổ',name:'lưỡi hổ',leaves:'snake',title:'Chăm sóc cây lưỡi hổ trong chậu',light:'shade',tips:['Tưới phun sương (1 lần/tuần)','Tỉa bớt lá bị úa','Xới để làm xốp giá thể','Bón phân bổ sung','Đặt trong phòng — ít ánh sáng','Vệ sinh lá (lau bụi)']},
+ trauba:{kind:'c2',N:'Trầu bà',name:'trầu bà',leaves:'pothos',title:'Chăm sóc cây trầu bà trong chậu',light:'shade',tips:['Tưới phun sương nhẹ, giữ ẩm vừa phải','Tỉa bớt lá bị úa','Xới để làm xốp giá thể','Bón phân bổ sung','Đặt trong phòng — ít ánh sáng','Vệ sinh lá (lau bụi)']},
+ phuquy:{kind:'c2',N:'Phú quý',name:'phú quý',leaves:'phuquy',title:'Chăm sóc cây phú quý trong chậu',light:'shade',tips:['Tưới phun sương nhẹ, giữ ẩm vừa phải','Tỉa bớt lá bị úa','Xới để làm xốp giá thể','Bón phân bổ sung','Đặt trong phòng — ít ánh sáng','Vệ sinh lá (lau bụi)']}};
+const CARE_LIST={c1:['duacan','hong','cuc'],c2:['luoiho','trauba','phuquy']};
+function chooseCare(k){bodyEl.textContent='';mode=k;clearLbls();care=null;careG.visible=false;$('bNext').style.display='none';$('bHint').style.display='none';camTarget(1.1,1.4,0,9,.7,0);
+ $('pSub').textContent='Bài 5 · Công nghệ 4 · Chân trời sáng tạo';$('pTitle').textContent=k==='c1'?'Chăm sóc hoa trong chậu':'Chăm sóc cây cảnh trong chậu';
+ bodyEl.appendChild(el('div','card','<h3>Em chọn loại '+(k==='c1'?'hoa':'cây cảnh')+' để chăm sóc</h3>Mỗi loại cần cách chăm sóc phù hợp. SGK thực hành với <b>dừa cạn</b> (hoa) và <b>lưỡi hổ</b> (cây cảnh); em có thể chọn thêm loại khác.'));
+ CARE_LIST[k].forEach(pk=>{const c=CARE_P[pk];const b=el('button','btn',c.N+(pk==='duacan'||pk==='luoiho'?'  (SGK)':''));b.style.cssText='display:block;width:100%;margin-bottom:8px;text-align:left';b.onclick=()=>startCare(k,pk);bodyEl.appendChild(b)})}
 const TASKS=[['water','Tưới, tiêu nước'],['thin','Tỉa, dặm'],['weed','Làm cỏ, vun xới'],['fert','Bón phân'],['light','Cung cấp ánh sáng'],['pest','Bắt sâu, vệ sinh cây']];
-function startCare(k){const cfg=CARE[k];
+function startCare(k,plant){if(!plant){return chooseCare(k)}const cfg=CARE_P[plant];mode=k;
  while(careG.children.length>CBASE)careG.remove(careG.children[careG.children.length-1]);while(careDyn.children.length)careDyn.remove(careDyn.children[0]);careG.add(careDyn);
- care={k,cfg,done:{},err:{water:0,fert:0,tool:0,mist:0},moist:k==='c1'?10:30,mist:0,fert:0,loosen:0,weeds:[],pests:[],leaves:[],gapM:null,zone:'bench',msg:'',grew:false,wasWatering:false,pot:careG};
+ care={k,plant,cfg,done:{},err:{water:0,fert:0,tool:0,mist:0},moist:k==='c1'?10:30,mist:0,fert:0,loosen:0,weeds:[],pests:[],leaves:[],gapM:null,zone:'bench',msg:'',grew:false,wasWatering:false,pot:careG};
  careSoilMat.color.setRGB(1,1,1).convertSRGBToLinear();careSoilMat.bumpScale=1.6;
  careG.visible=true;careG.position.set(0,1.09,.15);sunSet.visible=true;SHADE.mark.material.opacity=0;
- const tray=k==='c1'?['gloves','shears','trowel','can','mist','fert','cloth','seedPeri']:['gloves','shears','trowel','can','mist','fert','cloth'];
+ const tray=k==='c1'?['gloves','shears','trowel','can','mist','fert','cloth',cfg.item]:['gloves','shears','trowel','can','mist','fert','cloth'];
  tray.forEach((id,i)=>{const it=ITEMS[id];it.g.visible=true;it.tray=true;it.g.position.set(-4.3+i*(8.6/Math.max(7,tray.length-1)),1.09,TRAY_Z+.15);it.g.rotation.set(0,0,0)});
  if(k==='c1'){const spots=[[0,0],[.7,.15],[.35,.62],[-.35,.62],[-.7,.15],[-.35,-.6],[.35,-.6]];
-  spots.forEach((s,i)=>{if(i===4)return;const pl=mkPeri(1,{n:2});pl.position.set(s[0],1.4,s[1]);pl.rotation.y=Math.random()*6;careDyn.add(pl)});
+  spots.forEach((s,i)=>{if(i===4)return;const pl=cfg.mkSpot();pl.position.set(s[0],1.4,s[1]);pl.rotation.y=Math.random()*6;careDyn.add(pl)});
   const gm=new THREE.Mesh(new THREE.RingGeometry(.18,.28,20),new THREE.MeshBasicMaterial({color:'#ffd54f',side:THREE.DoubleSide,transparent:true,opacity:.95}));gm.rotation.x=-Math.PI/2;gm.position.set(-.7,1.44,.15);gm.userData.ck='gap';careDyn.add(gm);care.gapM=gm;care.gapPos=[-.7,.15];
   [[.95,-.1],[-.1,-.95],[.2,.95]].forEach(w=>{const wd=mkWeed();wd.position.set(w[0],1.4,w[1]);careDyn.add(wd);care.weeds.push(wd)});
-  [[.35,1.62,.62],[-.35,1.6,-.6],[.7,1.62,.15]].forEach(q=>{const ct=mkCat();ct.position.set(q[0]-.2,q[1]+.05,q[2]);ct.rotation.y=Math.random()*6;careDyn.add(ct);care.pests.push(ct)})}
- else{const m=mat('#ffffff',{map:TX.snake,roughness:.45});
-  for(let i=0;i<7;i++){const a=i/7*6.283+i*.4,L=.6+(i%3)*.25,W=.11+(i%2)*.025;const mm=m.clone();mm.side=THREE.DoubleSide;const lf=new THREE.Mesh(leafGeo(L,W,(i%2?.12:-.1),10),mm);lf.castShadow=true;const r=.05+(i%3)*.04;lf.position.set(Math.cos(a)*r,1.4,Math.sin(a)*r);lf.rotation.y=a+Math.PI/2;lf.rotation.x=(i%2?.08:-.04);lf.userData.ck='leaf';lf.userData.i=i;lf.userData.obj=lf;lf.userData.base=mm.color.clone();
-   if(i===1||i===4){lf.userData.state='wither';mm.color.set(lin('#d9bf54'));lf.rotation.x=.55}else if(i===0||i===2||i===5){lf.userData.state='dust';mm.color.set(lin('#a9a9a0'))}else lf.userData.state='ok';
-   careDyn.add(lf);care.leaves.push(lf)}
+  [[.35,1.62,.62],[-.35,1.6,-.6],[.7,1.62,.15]].forEach(q=>{const ct=mkCat();ct.position.set(q[0]-.2,1.4+cfg.leafY+(q[1]-1.62)+.05,q[2]);ct.rotation.y=Math.random()*6;careDyn.add(ct);care.pests.push(ct)})}
+ else{buildCareLeaves(cfg).forEach(lf=>{careDyn.add(lf);care.leaves.push(lf)});
   const wd=mkWeed();wd.position.set(.9,1.4,.3);careDyn.add(wd);care.weeds.push(wd);careSoilMat.bumpScale=.6}
- camTarget(0.8,1.7,.3,8.2,.75,0);$('bNext').style.display='';$('bNext').disabled=true;$('bNext').textContent='Xem kết quả';
+ camTarget(0.8,1.7,.3,8.2,.75,0);$('bNext').style.display='';$('bHint').style.display='';$('bNext').disabled=true;$('bNext').textContent='Xem kết quả';
  clearLbls();addLbl('Sân · nhiều ánh sáng',new THREE.Vector3(-8.4,3.6,1.4),'#ffb300');addLbl('Trong phòng · ít ánh sáng',new THREE.Vector3(8.2,3.3,1.4),'#4aa3e8');
- trayLabels();renderCare(k==='c1'?'Cây dừa cạn trong chậu đang gặp vài vấn đề. Làm các công việc chăm sóc theo thứ tự em thấy hợp lí — không bắt buộc theo trình tự.':'Cây lưỡi hổ cần chăm sóc theo cách riêng của cây cảnh (ít nước, ít sáng). Hãy bắt đầu!')}
+ trayLabels();renderCare(k==='c1'?'Chậu '+cfg.name+' đang gặp vài vấn đề. Làm các công việc chăm sóc theo thứ tự em thấy hợp lí — không bắt buộc theo trình tự.':'Cây '+cfg.name+' cần chăm sóc theo cách riêng của cây cảnh (ít nước, ít sáng). Hãy bắt đầu!')}
+function buildCareLeaves(cfg){const out=[];
+ function mark(lf,i,mm){lf.castShadow=true;lf.userData.ck='leaf';lf.userData.i=i;lf.userData.obj=lf;lf.userData.base=mm.color.clone();
+  if(i===1||i===4){lf.userData.state='wither';mm.color.set(lin('#d9bf54'));lf.rotation.x+=.45}else if(i===0||i===2||i===5){lf.userData.state='dust';mm.color.set(lin('#a9a9a0'))}else lf.userData.state='ok';out.push(lf)}
+ if(cfg.leaves==='snake'){const m=mat('#ffffff',{map:TX.snake,roughness:.45});
+  for(let i=0;i<7;i++){const a=i/7*6.283+i*.4,L=.6+(i%3)*.25,W=.11+(i%2)*.025;const mm=m.clone();mm.side=THREE.DoubleSide;const lf=new THREE.Mesh(leafGeo(L,W,(i%2?.12:-.1),10),mm);const r=.05+(i%3)*.04;lf.position.set(Math.cos(a)*r,1.4,Math.sin(a)*r);lf.rotation.y=a+Math.PI/2;lf.rotation.x=(i%2?.08:-.04);mark(lf,i,mm)}}
+ else if(cfg.leaves==='phuquy'){const m=mat('#ffffff',{map:TX.phuquy,roughness:.35});
+  for(let i=0;i<8;i++){const a=i/8*6.283+i*.3,L=.7+(i%3)*.12,W=.22;const mm=m.clone();mm.side=THREE.DoubleSide;const lf=new THREE.Mesh(leafGeo(L,W,.25,8),mm);const r=.1+(i%2)*.08;lf.position.set(Math.cos(a)*r,1.4,Math.sin(a)*r);lf.rotation.y=-a+Math.PI/2;lf.rotation.x=.5+(i%2)*.15;mark(lf,i,mm)}}
+ else{const m=mat('#ffffff',{map:TX.pothos,roughness:.3});
+  for(let i=0;i<8;i++){const a=i/8*6.283+.3,r=.45+(i%3)*.2;const mm=m.clone();mm.side=THREE.DoubleSide;const lf=new THREE.Mesh(heartGeo(.5),mm);lf.position.set(Math.cos(a)*r,1.55+(i%2)*.12,Math.sin(a)*r);lf.rotation.set(-1.0+(i%3)*.1,-a+Math.PI/2,0);mark(lf,i,mm);
+   const st=tube([[Math.cos(a)*.1,1.4,Math.sin(a)*.1],[Math.cos(a)*r*.6,1.75,Math.sin(a)*r*.6],[Math.cos(a)*r,1.58+(i%2)*.12,Math.sin(a)*r]],.012,mat('#5a8f3a'),8);careDyn.add(st)}}
+ return out}
 function trayLabels(){clearLbls();addLbl('Sân · nhiều ánh sáng',new THREE.Vector3(-8.4,3.6,1.4),'#ffb300');addLbl('Trong phòng · ít ánh sáng',new THREE.Vector3(8.2,3.3,1.4),'#4aa3e8');
  Object.keys(ITEMS).forEach(id=>{const it=ITEMS[id];if(it.g.visible&&it.tray)addLbl(it.name.replace(/ \(.+/,''),it.g.position.clone().add(new THREE.Vector3(0,1.0,0)),held===id?'#1d5fd1':null)})}
 function cdone(){const k=care.k,d=care.done;return TASKS.every(t=>d[t[0]])}
@@ -574,24 +592,24 @@ function careClick(px,py){const hp=careHitPick(px,py);if(!hp)return;const h=hp.h
   if(st==='wither'){if(held!=='shears'){c.err.tool++;return cmsg('Lá úa cần dùng kéo cắt cành để tỉa bớt.','no')}carePoof(lf.position.clone().add(new THREE.Vector3(0,.5,0)),'#d9bf54');careDyn.remove(lf);c.leaves=c.leaves.filter(x=>x!==lf);return cmsg(c.leaves.some(l=>l.userData.state==='wither')?'Đã tỉa một lá úa. Còn lá úa nữa.':'Đã tỉa hết lá úa.','ok')}
   if(st==='dust'){if(held!=='cloth'){c.err.tool++;return cmsg('Lau bụi trên lá bằng khăn sạch (ẩm).','no')}lf.material.color.copy(lf.userData.base);lf.userData.state='ok';carePoof(lf.position.clone().add(new THREE.Vector3(0,.5,0)),'#ffffff');return cmsg(c.leaves.some(l=>l.userData.state==='dust')?'Lá đã sạch. Lau tiếp các lá còn bụi.':'Tất cả các lá đã sạch bụi.','ok')}
   return cmsg('Lá này khoẻ, không cần xử lí.','')}
- if(u.ck==='gap'){if(held!=='seedPeri')return cmsg('Cầm cây dừa cạn con trong khay rồi bấm vào chỗ trống để dặm.','no');const pl=mkPeri(1,{n:2});pl.position.set(c.gapPos[0],1.4,c.gapPos[1]);careDyn.add(pl);careDyn.remove(c.gapM);c.gapM=null;ITEMS.seedPeri.g.visible=false;ITEMS.seedPeri.tray=false;held=null;heldChip();return cmsg('Đã dặm thêm cây vào chỗ trống. Chậu đã đều hơn!','ok')}
+ if(u.ck==='gap'){if(held!==c.cfg.item)return cmsg('Cầm cây '+c.cfg.name+' con trong khay rồi bấm vào chỗ trống để dặm.','no');const pl=c.cfg.mkSpot();pl.position.set(c.gapPos[0],1.4,c.gapPos[1]);careDyn.add(pl);careDyn.remove(c.gapM);c.gapM=null;ITEMS[c.cfg.item].g.visible=false;ITEMS[c.cfg.item].tray=false;held=null;heldChip();return cmsg('Đã dặm thêm cây vào chỗ trống. Chậu đã đều hơn!','ok')}
  if(u.ck==='cpot'){
   if(held==='fork'||held==='trowel'){c.loosen++;const t=ITEMS[held];anim.push({g:t.g,t:0,type:'dip',x:t.g.position.x,y:t.g.position.y});careSoilMat.bumpScale=Math.min(4,careSoilMat.bumpScale+.5);carePoof(h.point.clone().sub(careG.position),'#6b4a33');return cmsg(c.loosen<3?'Đã xới '+c.loosen+'/3: giá thể xốp hơn.':'Giá thể đã được xới xốp.','ok')}
   if(held==='fert'){c.fert++;for(let i=0;i<14;i++){const s=new THREE.Mesh(new THREE.SphereGeometry(.03,6,5),mat(i%2?'#f2f2ee':'#4a8fd6',{roughness:.6}));const a=Math.random()*6.28,rd=.5+Math.random()*.6;s.position.set(Math.cos(a)*rd,1.42,Math.sin(a)*rd);careDyn.add(s)}
    if(c.fert>3){c.err.fert++;return cmsg('Bón quá nhiều phân làm cháy rễ, hại cây! Chỉ bón định kì, lượng vừa phải.','no')}return cmsg(c.fert===1?'Đã bón phân quanh gốc (không rắc sát thân). Đủ rồi — bón thêm ít khi cây vàng lá.':'Bón bổ sung một ít. Đủ rồi!','ok')}
-  if(held==='mist'){c.mist++;mistAt();if(k==='c1'){c.moist=Math.min(130,c.moist+8);return cmsg('Dừa cạn cần tưới đủ nước (2 lần/ngày) bằng bình tưới — phun sương không đủ ẩm.','no')}
-   c.moist=Math.min(100,c.moist+12);if(c.mist>6){c.err.mist++;return cmsg('Phun quá nhiều! Lưỡi hổ chỉ cần phun sương 1 lần/tuần.','no')}return cmsg('Đã phun sương '+c.mist+' lần'+(c.mist<3?'. Phun thêm cho đủ ẩm.':'. Vừa đủ ẩm!'),'ok')}
+  if(held==='mist'){c.mist++;mistAt();if(k==='c1'){c.moist=Math.min(130,c.moist+8);return cmsg(c.cfg.N+' cần tưới đủ nước bằng bình tưới — phun sương không đủ ẩm.','no')}
+   c.moist=Math.min(100,c.moist+12);if(c.mist>6){c.err.mist++;return cmsg('Phun quá nhiều! '+c.cfg.N+' chỉ cần phun sương nhẹ, khoảng 1 lần/tuần.','no')}return cmsg('Đã phun sương '+c.mist+' lần'+(c.mist<3?'. Phun thêm cho đủ ẩm.':'. Vừa đủ ẩm!'),'ok')}
   if(held==='can')return cmsg('Giữ chuột (hoặc ngón tay) lên chậu để tưới.','');
   if(held==='cloth'||held==='shears'||held==='gloves')return cmsg('Dụng cụ này dùng cho lá hoặc cây — hãy bấm vào lá, cỏ hoặc sâu.','');
-  if(held==='seedPeri')return cmsg('Bấm đúng vào chỗ trống (vòng vàng) để dặm cây.','no');
+  if(held===c.cfg.item)return cmsg('Bấm đúng vào chỗ trống (vòng vàng) để dặm cây.','no');
   return cmsg('Hãy chọn một dụng cụ trong khay trước.','')}}
 function moveTo(z){const c=care;if(c.zone===z)return;const to=z==='sun'?new THREE.Vector3(sunSet.position.x,.95,sunSet.position.z):new THREE.Vector3(SHADE.x,.95,SHADE.z);anim.push({g:careG,t:0,type:'move',from:careG.position.clone(),to});c.zone=z;camTarget(0,1.6,.8,15,.62,0);
- const ok=z===c.cfg.light;cmsg(ok?(z==='sun'?'Chậu dừa cạn ở sân, nơi nhiều ánh sáng — rất phù hợp!':'Lưỡi hổ đặt trong phòng, ít ánh sáng — phù hợp với cây cảnh này.'):(z==='sun'?'Lưỡi hổ không cần nhiều nắng: nắng gắt làm cháy lá. Hãy đặt trong phòng.':'Dừa cạn cần nhiều ánh sáng để ra hoa: hãy đặt ở sân.'),ok?'ok':'no');if(!ok)c.err.tool++}
+ const ok=z===c.cfg.light;const nm=c.cfg.N;cmsg(ok?(z==='sun'?'Chậu '+c.cfg.name+' ở sân, nơi nhiều ánh sáng — rất phù hợp!':nm+' đặt trong phòng, ít ánh sáng — phù hợp với cây này.'):(z==='sun'?nm+' không cần nhiều nắng: nắng gắt làm cháy lá. Hãy đặt trong phòng.':nm+' cần nhiều ánh sáng để ra hoa: hãy đặt ở sân.'),ok?'ok':'no');if(!ok)c.err.tool++}
 function careTick(dt){if(!care)return;const c=care;
  if(watering&&held==='can'){c.moist=Math.min(130,c.moist+dt*28);for(let i=0;i<3;i++){const s=new THREE.Mesh(dropGeo,dropMat);s.position.set((Math.random()-.5)*1.5,2.4,(Math.random()-.5)*1.5);careG.add(s);cdrops.push({m:s,v:new THREE.Vector3(0,-3.5,0),life:.6})}
   const w=c.moist;const k2=1-Math.min(1,w/130)*.5;careSoilMat.color.setRGB(k2,k2,k2).convertSRGBToLinear();
   const g=bodyEl.querySelector('.gauge');if(g&&c.k==='c1'){g.firstChild.innerHTML='Độ ẩm giá thể: <b>'+(w<45?'còn khô':w<=85?'đủ ẩm':'hơi nhiều nước')+'</b> · phân đã bón '+c.fert+' lần · đã xới '+c.loosen+'/3';g.querySelector('.fill').style.width=Math.min(100,w/130*100)+'%'}
-  if(c.k==='c2'&&w>70&&!c.warned){c.warned=1;c.err.water++;fb('Lưỡi hổ rất ít nước — tưới nhiều làm úng, thối rễ! Dùng bình phun sương.','no')}}
+  if(c.k==='c2'&&w>70&&!c.warned){c.warned=1;c.err.water++;fb(c.cfg.N+' cần rất ít nước — tưới nhiều làm úng, thối rễ! Dùng bình phun sương.','no')}}
  if(c.wasWatering&&!watering){if(c.k==='c1'){if(c.moist>85){c.err.water++;renderCare('Hơi nhiều nước rồi — dừa cạn cần vừa đủ ẩm (khoảng 2 lần/ngày).','no')}else if(c.moist>=45)renderCare('Giá thể đủ ẩm. Tốt lắm!','ok');else renderCare('Còn khô — tưới thêm cho đủ ẩm.','')}else renderCare()}
  c.wasWatering=watering&&held==='can';
  for(let i=cdrops.length-1;i>=0;i--){const d=cdrops[i];d.life-=dt;d.m.position.addScaledVector(d.v,dt);d.v.y-=2*dt;if(d.life<=0||d.m.position.y<1.35&&d.v.y<0&&d.life<.5){careG.remove(d.m);cdrops.splice(i,1)}}
@@ -599,15 +617,15 @@ function careTick(dt){if(!care)return;const c=care;
  if(care.zone==='bench'&&care.k==='c2')SHADE.mark.material.opacity=.5+Math.sin(T*4)*.4;else if(care.zone!=='bench'||!care)SHADE.mark.material.opacity=0}
 function careEval(){const c=care,d=c.done,lab={t:'Tốt',d:'Đạt',c:'Cần cố gắng'};
  const rate=(k)=>{if(!d[k])return'c';const e={water:c.err.water+c.err.mist,fert:c.err.fert,weed:0,thin:0,light:0,pest:0}[k]||0;return e===0?'t':'d'};
- const rows=TASKS.map(t=>[t[1],rate(t[0]),CARE[c.k].tips[TASKS.indexOf(t)]]);const toolErr=c.err.tool;
+ const rows=TASKS.map(t=>[t[1],rate(t[0]),c.cfg.tips[TASKS.indexOf(t)]]);const toolErr=c.err.tool;
  const sc=rows.reduce((s,r)=>s+(r[1]==='t'?2:r[1]==='d'?1:0),0)-(toolErr>3?1:0),max=rows.length*2;const stars=sc>=max*.85?3:sc>=max*.55?2:1;
  const good=sc>=max*.7;const h0=c.k==='c1'?18:40;const hs=c.k==='c1'?(good?[h0,h0+5,h0+11]:[h0,h0+1,h0+2]):(good?[h0,h0+1,h0+3]:[h0,h0,h0+1]);
  const st=good?['khoẻ','khoẻ, ra nhiều lá'+(c.k==='c1'?', ra hoa':''),'khoẻ, phát triển tốt']:['hơi yếu','lá vàng, ít phát triển','còn yếu, cần chăm kĩ hơn'];
  const how=c.k==='c1'?['Tưới 2 lần/ngày, bắt sâu','Làm cỏ, bón phân định kì','Tưới, xới, đặt chỗ nhiều sáng']:['Phun sương 1 lần/tuần','Lau lá, tỉa lá úa','Xới giá thể, bón bổ sung'];
- let h='<h2>Kết quả chăm sóc '+CARE[c.k].name+'</h2><div class="stars">'+'★'.repeat(stars)+'☆'.repeat(3-stars)+'</div><table><tr><th>Công việc (SGK)</th><th>Kết quả</th></tr>';
+ let h='<h2>Kết quả chăm sóc '+c.cfg.name+'</h2><div class="stars">'+'★'.repeat(stars)+'☆'.repeat(3-stars)+'</div><table><tr><th>Công việc (SGK)</th><th>Kết quả</th></tr>';
  rows.forEach(r=>{h+='<tr><td>'+r[0]+'<br><small style="color:#52657f">'+r[2]+'</small></td><td><span class="tag '+r[1]+'">'+lab[r[1]]+'</span></td></tr>'});
  h+='</table><div class="card"><h3>Vận dụng: ghi lại tình trạng cây trong 3 tuần</h3><table><tr><th>Thời gian</th><th>Cách chăm sóc</th><th>Cao</th><th>Tình trạng</th></tr>'+[0,1,2].map(i=>'<tr><td>Tuần '+(i+1)+'</td><td>'+how[i]+'</td><td>'+hs[i]+' cm</td><td>'+st[i]+'</td></tr>').join('')+'</table><small>Bảng minh hoạ theo cách em đã chăm sóc; em hãy ghi vào bảng thật khi trồng một chậu cây.</small></div>'+(toolErr?'<small>Số lần chọn sai dụng cụ/vị trí: '+toolErr+'.</small>':'')+'<div class="row"><button class="btn go" id="ovAgain">Làm lại</button><button class="btn" id="ovGrow">Tua nhanh 3 tuần 🌱</button><button class="btn" id="ovClose">Đóng</button></div>';
- $('ovIn').innerHTML=h;$('ov').hidden=false;$('ovAgain').onclick=()=>{$('ov').hidden=true;start(mode)};$('ovClose').onclick=()=>{$('ov').hidden=true};$('ovGrow').onclick=()=>{$('ov').hidden=true;careDyn.scale.setScalar(1);const t0=performance.now();(function gr(){const u=Math.min(1,(performance.now()-t0)/3500);careDyn.scale.set(1+u*(good?.12:.03),1+u*(good?.35:.06),1+u*(good?.12:.03));if(u<1)requestAnimationFrame(gr)})()}}
+ $('ovIn').innerHTML=h;$('ov').hidden=false;$('ovAgain').onclick=()=>{$('ov').hidden=true;startCare(c.k)};$('ovClose').onclick=()=>{$('ov').hidden=true};$('ovGrow').onclick=()=>{$('ov').hidden=true;careDyn.scale.setScalar(1);const t0=performance.now();(function gr(){const u=Math.min(1,(performance.now()-t0)/3500);careDyn.scale.set(1+u*(good?.12:.03),1+u*(good?.35:.06),1+u*(good?.12:.03));if(u<1)requestAnimationFrame(gr)})()}}
 /* ---- LUYỆN TẬP: cây nào chưa được chăm sóc tốt? ---- */
 const prG=new THREE.Group();scene.add(prG);prG.visible=false;let pr=null;
 const PR_REASONS=[['thieunuoc','Thiếu nước'],['sau','Có sâu ăn lá'],['thieusang','Thiếu ánh sáng'],['tot','Được chăm sóc tốt']];
@@ -779,6 +797,26 @@ function libClick(px,py){const h=pick(px,py,libG.children);if(!h)return;let o=h.
  if(lib.quiz){const want=lib.order[lib.qa];if(i===want){lib.ok++;lib.qa++;if(lib.qa>=lib.order.length){const ok=lib.ok;lib.quiz=null;return renderLib('Hoàn thành đố vui! Em đoán đúng '+ok+'/'+lib.order.length+' cây. 🌿','ok')}return renderLib('Đúng rồi, đó là '+PLANTS[want].n+'! Câu tiếp theo:','ok')}{let q=h.object;while(q.parent&&q.parent!==libG)q=q.parent;anim.push({g:q,t:0,type:'shake',x:q.position.x})}fb('Chưa đúng. Hãy đọc lại đặc điểm và ý nghĩa.','no');return}
  lib.sel=i;renderLib()}
 
+/* ======== BÀI 4: CHỌN CÂY CẢNH ĐỂ TRỒNG ======== */
+const ORNP=[{k:'luoiho',n:'Cây lưỡi hổ',item:'plantLuoiHo',N:1,water:[30,65],mk:()=>mkSnake(1.9),info:'Ít ánh sáng, rất ít nước · giá thể thoát nước (SGK)'},
+ {k:'xuongrong',n:'Cây xương rồng',item:'plantXuongRong',N:1,water:[25,55],mk:()=>mkXuongRong(2.2),info:'Nhiều ánh sáng, rất ít nước · giá thể thoát nước'},
+ {k:'senda',n:'Cây sen đá',item:'plantSenDa',N:3,water:[25,55],mk:()=>mkSenDa(1.9),info:'Ánh sáng vừa, ít nước · giá thể thoát nước'},
+ {k:'trauba',n:'Cây trầu bà',item:'plantTrauBa',N:2,water:[45,85],mk:()=>mkTrauBa(1.7),info:'Ít đến vừa ánh sáng, giữ ẩm · giá thể giữ nước tốt'},
+ {k:'phuquy',n:'Cây phú quý',item:'plantPhuQuy',N:1,water:[40,80],mk:()=>mkPhuQuy(2.0),info:'Ít ánh sáng, tưới vừa · giá thể giữ nước tốt'}];
+function startOrnChoose(){resetScene();mode='luoiho';$('bNext').style.display='none';$('bHint').style.display='none';camTarget(1.1,1.0,-.2,10.5,.85,0);
+ ['gloves','trowel','fork','can','shears'].concat(ORDER_MATS).forEach(id=>{if(ITEMS[id])ITEMS[id].g.visible=true});
+ bodyEl.textContent='';$('pSub').textContent='Bài 4 · Công nghệ 4 · Chân trời sáng tạo';$('pTitle').textContent='Trồng cây cảnh trong chậu';
+ bodyEl.appendChild(el('div','card','<h3>Em chọn cây cảnh để trồng</h3>SGK thực hành với <b>cây lưỡi hổ</b>; phần Vận dụng gợi ý thêm phú quý, xương rồng, trầu bà. Cây cảnh cần ít ánh sáng và ít nước hơn hoa; giá thể phải thoát nước tốt.'));
+ ORNP.forEach(o=>{const b=el('button','btn',o.n+(o.k==='luoiho'?'  (SGK)':''));b.style.cssText='display:block;width:100%;margin-bottom:4px;text-align:left';b.onclick=()=>startOrn(o.k);bodyEl.appendChild(b);bodyEl.appendChild(el('div','',''+'<small style="color:#52657f;display:block;margin:0 0 8px 6px">'+o.info+'</small>'))})}
+function startOrn(k){const O=ORNP.find(x=>x.k===k);
+ const a={key:'orn',bai:'Bài 4',title:'Trồng '+O.n.toLowerCase().replace('cây ','cây ')+' trong chậu',kind:'plant',N:O.N,tool3:'trowel',req:[O.item,'potOk','soil','shears','trowel','gloves','can'],opt:['gravel','fork'],plant:O.item,water:O.water,mk:O.mk,why:{},
+  steps:['Chuẩn bị vật liệu, vật dụng và dụng cụ','Cho giá thể vào chậu (cách miệng 2–5 cm)','Trồng cây cảnh: tạo hốc → đặt cây thẳng đứng → vun giá thể','Tưới đủ ẩm quanh gốc (cây cảnh cần ít nước hơn hoa)','Đặt chậu nơi bóng râm, cất dụng cụ, vệ sinh']};
+ ALLP.forEach(id=>{if(id!==O.item)a.why[id]='Em đã chọn '+O.n.toLowerCase()+' — không dùng loại này.'});
+ resetScene();['gloves','trowel','fork','can','shears'].forEach((id,i)=>{HOME[id]=new THREE.Vector3(-4+i*2,1.09,.6);ITEMS[id].g.position.copy(HOME[id]);ITEMS[id].g.visible=true});
+ const others=ALLP.filter(id=>id!==O.item).sort(()=>Math.random()-.5).slice(0,3);const mats=['potOk','potGlass','soil','gravel',O.item].concat(others).sort(()=>Math.random()-.5);
+ mats.forEach((id,i)=>{HOME[id]=new THREE.Vector3(-4.3+i*1.2,1.09,-1.2);ITEMS[id].g.position.copy(HOME[id]);ITEMS[id].g.visible=true});
+ mode='luoiho';S=newState(a);$('bNext').style.display='';$('bHint').style.display='';camTarget(1.1,1.0,-.2,10.5,.85,0);renderStep('Em đã chọn '+O.n.toLowerCase()+'. Lấy đúng vật liệu, dụng cụ vào khay.','ok')}
+
 /* ======== CAMERA & ĐIỀU KHIỂN ======== */
 const cam={tx:0,ty:1.3,tz:0,dist:9,pitch:.7,yaw:0};const goal={tx:0,ty:1.3,tz:0,dist:9,pitch:.7,yaw:0};
 function camTarget(x,y,z,d,p,yw){Object.assign(goal,{tx:x,ty:y,tz:z,dist:d,pitch:p,yaw:yw||0})}
@@ -841,7 +879,7 @@ function frame(){const dt=Math.min(clock.getDelta(),.05);T+=dt;
 function resize(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();if(innerWidth<760){goal.dist=Math.max(goal.dist,10)}}
 addEventListener('resize',resize);resize();
 /* màn hình chào */
-(function(){bodyEl.innerHTML='<div class="card"><h3>Chào em! 🌱</h3>Đây là <b>vườn ươm 3D</b> theo sách Công nghệ 4 (Chân trời sáng tạo), <b>Bài 1 → Bài 5 và Dự án 1</b>. Chọn một bài ở thanh phía trên để bắt đầu:<ul><li><b>Bài 1</b>: nhận biết 10 loại hoa, cây cảnh + đố vui.</li><li><b>Bài 2</b>: nhận biết chậu, giá thể, dụng cụ.</li><li><b>Bài 3</b>: gieo hạt hướng dương, trồng hoa mười giờ.</li><li><b>Bài 4</b>: trồng cây lưỡi hổ.</li><li><b>Bài 5</b>: chăm sóc dừa cạn, lưỡi hổ + luyện tập.</li><li><b>Dự án 1</b>: trồng hoa trang trí lớp học.</li></ul>Kéo chuột để xoay, lăn để phóng to. Bấm vào vật để cầm hoặc dùng.</div><div class="card"><h3>An toàn lao động</h3>Dùng dụng cụ theo hướng dẫn của giáo viên, không đùa giỡn; vệ sinh khu vực và cất dụng cụ đúng nơi quy định.</div>';
+(function(){bodyEl.innerHTML='<div class="card"><h3>Chào em! 🌱</h3>Đây là <b>vườn ươm 3D</b> theo sách Công nghệ 4 (Chân trời sáng tạo), <b>Bài 1 → Bài 5 và Dự án 1</b>. Chọn một bài ở thanh phía trên để bắt đầu:<ul><li><b>Bài 1</b>: nhận biết 10 loại hoa, cây cảnh + đố vui.</li><li><b>Bài 2</b>: nhận biết chậu, giá thể, dụng cụ.</li><li><b>Bài 3</b>: gieo hạt hướng dương, trồng hoa mười giờ.</li><li><b>Bài 4</b>: trồng cây cảnh (em chọn lưỡi hổ, xương rồng, sen đá, trầu bà, phú quý).</li><li><b>Bài 5</b>: chăm sóc hoa (dừa cạn, hồng, cúc) hoặc cây cảnh (lưỡi hổ, trầu bà, phú quý) + luyện tập.</li><li><b>Dự án 1</b>: trồng hoa trang trí lớp học.</li></ul>Kéo chuột để xoay, lăn để phóng to. Bấm vào vật để cầm hoặc dùng.</div><div class="card"><h3>An toàn lao động</h3>Dùng dụng cụ theo hướng dẫn của giáo viên, không đùa giỡn; vệ sinh khu vực và cất dụng cụ đúng nơi quy định.</div>';
  $('bNext').style.display='none';$('bHint').style.display='none';
  ['gloves','trowel','fork','can','shears'].forEach(id=>ITEMS[id].g.visible=true);ORDER_MATS.forEach(id=>ITEMS[id].g.visible=true);camTarget(1.2,1.2,-.3,12,.8,.2);cam.yaw=.6;cam.dist=16})();
 frame();setTimeout(()=>{$('load').style.opacity=0;setTimeout(()=>$('load').remove(),700)},400);
